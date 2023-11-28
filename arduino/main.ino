@@ -1,183 +1,183 @@
-#include <Arduino.h>
-#include <WiFi.h>
+#include <arduino.h>
+#include <wifi.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 
-const char* ssid = "Marini_2.4GHz";
-const char* password = "yD22bws@SxJ!9*%10";
+const char* ssid = "SSID";
+const char* password = "PASS";
 
-String serverName = "192.168.1.55";
+string servername = "XXX.XXX.XXX.XXX";
 
-String serverPath = "/upload/upload-single-image";
+string serverpath = "/upload/upload-single-image";
 
-const int serverPort = 4000;
+const int serverport = 4000;
 
-WiFiClient client;
+wificlient client;
 
-// CAMERA_MODEL_AI_THINKER
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
+// camera_model_ai_thinker
+#define pwdn_gpio_num     32
+#define reset_gpio_num    -1
+#define xclk_gpio_num      0
+#define siod_gpio_num     26
+#define sioc_gpio_num     27
 
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+#define y9_gpio_num       35
+#define y8_gpio_num       34
+#define y7_gpio_num       39
+#define y6_gpio_num       36
+#define y5_gpio_num       21
+#define y4_gpio_num       19
+#define y3_gpio_num       18
+#define y2_gpio_num        5
+#define vsync_gpio_num    25
+#define href_gpio_num     23
+#define pclk_gpio_num     22
 
-const int timerInterval = 10000;    // time between each HTTP POST image
-unsigned long previousMillis = 0;   // last time image was sent
+const int timerinterval = 10000;    // time between each http post image
+unsigned long previousmillis = 0;   // last time image was sent
 
 void setup() {
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-  Serial.begin(115200);
+  write_peri_reg(rtc_cntl_brown_out_reg, 0);
+  serial.begin(115200);
 
-  WiFi.mode(WIFI_STA);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);  
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
+  wifi.mode(wifi_sta);
+  serial.println();
+  serial.print("connecting to ");
+  serial.println(ssid);
+  wifi.begin(ssid, password);  
+  while (wifi.status() != wl_connected) {
+    serial.print(".");
     delay(500);
   }
-  Serial.println();
-  Serial.print("ESP32-CAM IP Address: ");
-  Serial.println(WiFi.localIP());
+  serial.println();
+  serial.print("esp32-cam ip address: ");
+  serial.println(wifi.localip());
 
   camera_config_t config;
-  config.ledc_channel = LEDC_CHANNEL_0;
-  config.ledc_timer = LEDC_TIMER_0;
-  config.pin_d0 = Y2_GPIO_NUM;
-  config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;
-  config.pin_d3 = Y5_GPIO_NUM;
-  config.pin_d4 = Y6_GPIO_NUM;
-  config.pin_d5 = Y7_GPIO_NUM;
-  config.pin_d6 = Y8_GPIO_NUM;
-  config.pin_d7 = Y9_GPIO_NUM;
-  config.pin_xclk = XCLK_GPIO_NUM;
-  config.pin_pclk = PCLK_GPIO_NUM;
-  config.pin_vsync = VSYNC_GPIO_NUM;
-  config.pin_href = HREF_GPIO_NUM;
-  config.pin_sscb_sda = SIOD_GPIO_NUM;
-  config.pin_sscb_scl = SIOC_GPIO_NUM;
-  config.pin_pwdn = PWDN_GPIO_NUM;
-  config.pin_reset = RESET_GPIO_NUM;
+  config.ledc_channel = ledc_channel_0;
+  config.ledc_timer = ledc_timer_0;
+  config.pin_d0 = y2_gpio_num;
+  config.pin_d1 = y3_gpio_num;
+  config.pin_d2 = y4_gpio_num;
+  config.pin_d3 = y5_gpio_num;
+  config.pin_d4 = y6_gpio_num;
+  config.pin_d5 = y7_gpio_num;
+  config.pin_d6 = y8_gpio_num;
+  config.pin_d7 = y9_gpio_num;
+  config.pin_xclk = xclk_gpio_num;
+  config.pin_pclk = pclk_gpio_num;
+  config.pin_vsync = vsync_gpio_num;
+  config.pin_href = href_gpio_num;
+  config.pin_sscb_sda = siod_gpio_num;
+  config.pin_sscb_scl = sioc_gpio_num;
+  config.pin_pwdn = pwdn_gpio_num;
+  config.pin_reset = reset_gpio_num;
   config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
+  config.pixel_format = pixformat_jpeg;
 
   // init with high specs to pre-allocate larger buffers
-  if(psramFound()){
-    config.frame_size = FRAMESIZE_SVGA;
+  if(psramfound()){
+    config.frame_size = framesize_svga;
     config.jpeg_quality = 10;  //0-63 lower number means higher quality
     config.fb_count = 2;
   } else {
-    config.frame_size = FRAMESIZE_CIF;
+    config.frame_size = framesize_cif;
     config.jpeg_quality = 12;  //0-63 lower number means higher quality
     config.fb_count = 1;
   }
   
   // camera init
   esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
+  if (err != esp_ok) {
+    serial.printf("camera init failed with error 0x%x", err);
     delay(1000);
-    ESP.restart();
+    esp.restart();
   }
 
-  sendPhoto(); 
+  sendphoto(); 
 }
 
 void loop() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= timerInterval) {
-    sendPhoto();
-    previousMillis = currentMillis;
+  unsigned long currentmillis = millis();
+  if (currentmillis - previousmillis >= timerinterval) {
+    sendphoto();
+    previousmillis = currentmillis;
   }
 }
 
-String sendPhoto() {
-  String getAll;
-  String getBody;
+string sendphoto() {
+  string getall;
+  string getbody;
 
-  camera_fb_t * fb = NULL;
+  camera_fb_t * fb = null;
   fb = esp_camera_fb_get();
   if(!fb) {
-    Serial.println("Camera capture failed");
+    serial.println("camera capture failed");
     delay(1000);
-    ESP.restart();
+    esp.restart();
   }
   
-  Serial.println("Connecting to server: " + serverName);
+  serial.println("connecting to server: " + servername);
 
-  if (client.connect(serverName.c_str(), serverPort)) {
-    Serial.println("Connection successful!");    
-    String head = "--CustomBoundary\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "\r\n--CustomBoundary--\r\n";
+  if (client.connect(servername.c_str(), serverport)) {
+    serial.println("connection successful!");    
+    string head = "--customboundary\r\ncontent-disposition: form-data; name=\"imagefile\"; filename=\"esp32-cam.jpg\"\r\ncontent-type: image/jpeg\r\n\r\n";
+    string tail = "\r\n--customboundary--\r\n";
 
-    uint32_t imageLen = fb->len;
-    uint32_t extraLen = head.length() + tail.length();
-    uint32_t totalLen = imageLen + extraLen;
+    uint32_t imagelen = fb->len;
+    uint32_t extralen = head.length() + tail.length();
+    uint32_t totallen = imagelen + extralen;
   
-    client.println("POST " + serverPath + " HTTP/1.1");
-    client.println("Host: " + serverName + ":" + serverPort);
-    client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data; boundary=CustomBoundary");
+    client.println("post " + serverpath + " http/1.1");
+    client.println("host: " + servername + ":" + serverport);
+    client.println("content-length: " + string(totallen));
+    client.println("content-type: multipart/form-data; boundary=customboundary");
     client.println();
     client.print(head);
   
-    uint8_t *fbBuf = fb->buf;
-    size_t fbLen = fb->len;
-    for (size_t n = 0; n < fbLen; n = n + 1024) {
-      if (n + 1024 < fbLen) {
-        client.write(fbBuf, 1024);
-        fbBuf += 1024;
+    uint8_t *fbbuf = fb->buf;
+    size_t fblen = fb->len;
+    for (size_t n = 0; n < fblen; n = n + 1024) {
+      if (n + 1024 < fblen) {
+        client.write(fbbuf, 1024);
+        fbbuf += 1024;
       }
-      else if (fbLen%1024>0) {
-        size_t remainder = fbLen%1024;
-        client.write(fbBuf, remainder);
+      else if (fblen%1024>0) {
+        size_t remainder = fblen%1024;
+        client.write(fbbuf, remainder);
       }
     }   
     client.print(tail);
     
     esp_camera_fb_return(fb);
     
-    int timoutTimer = 10000;
-    long startTimer = millis();
+    int timouttimer = 10000;
+    long starttimer = millis();
     boolean state = false;
     
-    while ((startTimer + timoutTimer) > millis()) {
-      Serial.print(".");
+    while ((starttimer + timouttimer) > millis()) {
+      serial.print(".");
       delay(100);      
       while (client.available()) {
         char c = client.read();
         if (c == '\n') {
-          if (getAll.length()==0) { state=true; }
-          getAll = "";
+          if (getall.length()==0) { state=true; }
+          getall = "";
         }
-        else if (c != '\r') { getAll += String(c); }
-        if (state==true) { getBody += String(c); }
-        startTimer = millis();
+        else if (c != '\r') { getall += string(c); }
+        if (state==true) { getbody += string(c); }
+        starttimer = millis();
       }
-      if (getBody.length()>0) { break; }
+      if (getbody.length()>0) { break; }
     }
-    Serial.println();
+    serial.println();
     client.stop();
-    Serial.println(getBody);
+    serial.println(getbody);
   }
   else {
-    getBody = "Connection to " + serverName +  " failed.";
-    Serial.println(getBody);
+    getbody = "connection to " + servername +  " failed.";
+    serial.println(getbody);
   }
-  return getBody;
+  return getbody;
 }
