@@ -26,7 +26,7 @@ exports.upload = multer({
   fileFilter: multerFilter
 });
 
-let runPy = function(imageName) {
+let runPyScript = function(imageName) {
   return new Promise(function(resolve, reject) {
     const pyprog = spawn('python', ['main.py', imageName]);
     console.log(`Processing image: ${imageName}`)
@@ -41,7 +41,7 @@ let runPy = function(imageName) {
 
 exports.uploadSingleImage = async (req, res) => {
   // const allquery = await client.query(`INSERT INTO users(name, icon) VALUES ('${req.body.filename}', '${req.file.filename}')`);
-  runPy(`${req.file.destination}/${req.file.filename}`).then((data) => {
+  runPyScript(`${req.file.destination}/${req.file.filename}`).then((data) => {
     const payload = data.toString()
     console.log(payload)
     res.status(200).json({ 'statusCode': 200, 'status': true, message: 'Image uploaded', 'data': [] });

@@ -1,4 +1,5 @@
 from yoloface.face_detector import YoloDetector
+import time
 import argparse
 import cv2
 
@@ -6,11 +7,13 @@ parser = argparse.ArgumentParser(prog='facecounter', description='count faces us
 parser.add_argument('filename')
 args = parser.parse_args()
 
-model = YoloDetector(device="cuda:0", min_face=20)
+model = YoloDetector(device="cpu", min_face=20)
 image = cv2.imread(args.filename)
 image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
+s = time.time()
 bboxes, points = model.predict(image)
+print("Time: ", time.time() - s, " seconds")
 print(bboxes)
 
 if (len(bboxes) and len(bboxes[0])):
