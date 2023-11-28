@@ -8,7 +8,7 @@ args = parser.parse_args()
 
 model = YoloDetector(device="cuda:0", min_face=20)
 image = cv2.imread(args.filename)
-# image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
 bboxes, points = model.predict(image)
 print(bboxes)
